@@ -1,0 +1,118 @@
+{
+  "version": 2.1,
+  "format": "breadboard-letter-number-v2",
+  "note": "🔌Circuito Pull-Down\n⚡Cuando no se presiona el pulsador el circuito entrega 0 voltios, o sea un 0 lógico.\n⚡Cuando se presiona el pulsador (número 1) el circuito entrega Vcc, o sea un 1 lógico.",
+  "actions": [
+    {
+      "type": "voltage",
+      "val": "3.3V"
+    },
+    {
+      "type": "multimeterMode",
+      "mode": "V"
+    },
+    {
+      "type": "tool",
+      "tool": "wire"
+    },
+    {
+      "type": "place",
+      "start": {
+        "x": 1,
+        "y": 0.5,
+        "z": -3.4000000000000004
+      },
+      "end": "PS20"
+    },
+    {
+      "type": "property",
+      "compType": "wire",
+      "prop": "cIdx",
+      "val": 0,
+      "start": {
+        "x": 1,
+        "y": 0.5,
+        "z": -3.4000000000000004
+      },
+      "end": "PS20"
+    },
+    {
+      "type": "tool",
+      "tool": "wire"
+    },
+    {
+      "type": "place",
+      "start": {
+        "x": -1,
+        "y": 0.5,
+        "z": -3.4000000000000004
+      },
+      "end": "NS14"
+    },
+    {
+      "type": "property",
+      "compType": "wire",
+      "prop": "cIdx",
+      "val": 0,
+      "start": {
+        "x": -1,
+        "y": 0.5,
+        "z": -3.4000000000000004
+      },
+      "end": "NS14"
+    },
+    {
+      "type": "tool",
+      "tool": "pushbutton"
+    },
+    {
+      "type": "place",
+      "start": "PS19",
+      "end": "J19"
+    },
+    {
+      "type": "tool",
+      "tool": "resistor"
+    },
+    {
+      "type": "place",
+      "start": "I19",
+      "end": "I17"
+    },
+    {
+      "type": "property",
+      "compType": "resistor",
+      "prop": "value",
+      "val": "10kΩ",
+      "start": "I19",
+      "end": "I17"
+    },
+    {
+      "type": "tool",
+      "tool": "wire"
+    },
+    {
+      "type": "place",
+      "start": "J17",
+      "end": "NS17"
+    },
+    {
+      "type": "property",
+      "compType": "wire",
+      "prop": "cIdx",
+      "val": 1,
+      "start": "J17",
+      "end": "NS17"
+    },
+    {
+      "type": "probe",
+      "color": "red",
+      "holeIdx": 255
+    },
+    {
+      "type": "probe",
+      "color": "black",
+      "holeIdx": 333
+    }
+  ]
+}

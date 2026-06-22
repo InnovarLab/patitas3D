@@ -1,0 +1,151 @@
+{
+  "version": 2.1,
+  "format": "breadboard-letter-number-v2",
+  "note": "Compuerta OR⚡⚡\nP1            P2         Salida          LED\n1              0              1       Prendido           \n0              1              1       Prendido\n1               1              1      Prendido\n0              0              0     Apagado",
+  "actions": [
+    {
+      "type": "voltage",
+      "val": "5.0V"
+    },
+    {
+      "type": "multimeterMode",
+      "mode": "V"
+    },
+    {
+      "type": "tool",
+      "tool": "pushbutton"
+    },
+    {
+      "type": "place",
+      "start": "I15",
+      "end": "I16"
+    },
+    {
+      "type": "tool",
+      "tool": "pushbutton"
+    },
+    {
+      "type": "place",
+      "start": "G15",
+      "end": "G16"
+    },
+    {
+      "type": "tool",
+      "tool": "resistor"
+    },
+    {
+      "type": "place",
+      "start": "H16",
+      "end": "H17"
+    },
+    {
+      "type": "property",
+      "compType": "resistor",
+      "prop": "value",
+      "val": "1kΩ",
+      "start": "H16",
+      "end": "H17"
+    },
+    {
+      "type": "tool",
+      "tool": "wire"
+    },
+    {
+      "type": "place",
+      "start": {
+        "x": 1,
+        "y": 0.5,
+        "z": -3.4000000000000004
+      },
+      "end": "PS20"
+    },
+    {
+      "type": "property",
+      "compType": "wire",
+      "prop": "cIdx",
+      "val": 0,
+      "start": {
+        "x": 1,
+        "y": 0.5,
+        "z": -3.4000000000000004
+      },
+      "end": "PS20"
+    },
+    {
+      "type": "tool",
+      "tool": "wire"
+    },
+    {
+      "type": "place",
+      "start": {
+        "x": -1,
+        "y": 0.5,
+        "z": -3.4000000000000004
+      },
+      "end": "NS13"
+    },
+    {
+      "type": "property",
+      "compType": "wire",
+      "prop": "cIdx",
+      "val": 1,
+      "start": {
+        "x": -1,
+        "y": 0.5,
+        "z": -3.4000000000000004
+      },
+      "end": "NS13"
+    },
+    {
+      "type": "tool",
+      "tool": "wire"
+    },
+    {
+      "type": "place",
+      "start": "NS18",
+      "end": "J18"
+    },
+    {
+      "type": "property",
+      "compType": "wire",
+      "prop": "cIdx",
+      "val": 1,
+      "start": "NS18",
+      "end": "J18"
+    },
+    {
+      "type": "tool",
+      "tool": "wire"
+    },
+    {
+      "type": "place",
+      "start": "PS15",
+      "end": "J15"
+    },
+    {
+      "type": "property",
+      "compType": "wire",
+      "prop": "cIdx",
+      "val": 0,
+      "start": "PS15",
+      "end": "J15"
+    },
+    {
+      "type": "tool",
+      "tool": "led"
+    },
+    {
+      "type": "place",
+      "start": "F17",
+      "end": "F18"
+    },
+    {
+      "type": "property",
+      "compType": "led",
+      "prop": "cIdx",
+      "val": 0,
+      "start": "F17",
+      "end": "F18"
+    }
+  ]
+}
