@@ -98,230 +98,10 @@
         return queue;
     }
     function initVideoTutor() {
-        ['video-tutor-panel', 'video-tutor-stage', 'video-tutor-hint'].forEach(id => {
+        ['video-tutor-stage'].forEach(id => {
             const old = document.getElementById(id);
             if (old) old.remove();
         });
-        const panelContainer = document.createElement('div');
-        panelContainer.id = 'video-tutor-panel';
-        Object.assign(panelContainer.style, {
-            position: 'fixed', top: '420px', left: '15px',
-            zIndex: '100001', fontFamily: 'sans-serif',
-            display: 'flex', flexDirection: 'column', alignItems: 'flex-start'
-        });
-        document.body.appendChild(panelContainer);
-        const miniBtn = document.createElement('div');
-        miniBtn.innerHTML = '⚙️ Control';
-        Object.assign(miniBtn.style, {
-            background: 'rgba(30,30,30,0.5)',
-            border: '1px solid rgba(241,196,15,0.3)',
-            borderRadius: '20px', padding: '6px 14px',
-            cursor: 'pointer', fontSize: '0.75rem',
-            color: 'rgba(241,196,15,0.8)', fontWeight: 'bold',
-            backdropFilter: 'blur(4px)', transition: 'all 0.3s ease', userSelect: 'none'
-        });
-        miniBtn.onmouseover = () => {
-            miniBtn.style.background = 'rgba(241,196,15,0.15)';
-            miniBtn.style.borderColor = 'rgba(241,196,15,0.6)';
-            miniBtn.style.transform = 'scale(1.05)';
-        };
-        miniBtn.onmouseout = () => {
-            miniBtn.style.background = 'rgba(30,30,30,0.5)';
-            miniBtn.style.borderColor = 'rgba(241,196,15,0.3)';
-            miniBtn.style.transform = 'scale(1)';
-        };
-        panelContainer.appendChild(miniBtn);
-        const panel = document.createElement('div');
-        Object.assign(panel.style, {
-            width: '320px', background: 'rgba(44,62,80,0.92)',
-            borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
-            marginTop: '10px', display: 'none', flexDirection: 'column',
-            maxHeight: '80vh', overflowY: 'auto'
-        });
-        panelContainer.appendChild(panel);
-        let isPanelOpen = false;
-        miniBtn.onclick = () => {
-            isPanelOpen = !isPanelOpen;
-            panel.style.display = isPanelOpen ? 'flex' : 'none';
-        };
-        const pHeader = document.createElement('div');
-        Object.assign(pHeader.style, {
-            padding: '8px', background: '#2c3e50', color: 'white',
-            fontSize: '12px', cursor: 'move',
-            borderTopLeftRadius: '8px', borderTopRightRadius: '8px',
-            display: 'flex', justifyContent: 'space-between'
-        });
-        pHeader.innerHTML = '<span>Arrastrar Panel</span><span id="pvt-close" style="cursor:pointer;color:#e74c3c;font-weight:bold;">X (Cerrar todo)</span>';
-        panel.appendChild(pHeader);
-        const pContent = document.createElement('div');
-        Object.assign(pContent.style, {
-            padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px'
-        });
-        panel.appendChild(pContent);
-        const btnContainer = document.createElement('div');
-        Object.assign(btnContainer.style, { display: 'flex', flexWrap: 'wrap', gap: '5px' });
-        pContent.appendChild(btnContainer);
-        const routines = [
-            { name: "LED",            msg: "Hoy armaremos nuestro primer circuito para encender un LED. Recuerda conectar la resistencia." },
-            { name: "Corriente",      msg: "Para medir la corriente, debes conectar el amperímetro en serie con el componente." },
-            { name: "Paralelo",       msg: "En un circuito en paralelo, el voltaje es el mismo en todas las ramas. ¡Pruébalo!" },
-            { name: "Despedida",      msg: "Excelente trabajo. Nos vemos en el próximo desafío." },
-            { name: "Saludar (Voz)",  msg: "Bienvenido a Patitas, un simulador de electrónica genial.", voice: true },
-            { name: "Probar Lip-sync",msg: "Hola, soy Patitas. Voy a hablar sobre electrónica, transistores y circuitos en serie y paralelo.", voice: true }
-        ];
-        routines.forEach(r => {
-            const b = document.createElement('button');
-            b.innerText = r.name;
-            Object.assign(b.style, {
-                padding: '5px 8px', cursor: 'pointer', fontSize: '11px',
-                background: r.voice ? '#e74c3c' : '#f1c40f',
-                color: r.voice ? 'white' : '#2c3e50',
-                fontWeight: 'bold', border: 'none', borderRadius: '4px',
-                transition: 'transform 0.1s'
-            });
-            b.onmousedown = () => b.style.transform = 'scale(0.95)';
-            b.onmouseup   = () => b.style.transform = 'scale(1)';
-            b.onclick = () => r.voice ? speakWithAnimation(r.msg) : showBubble(r.msg);
-            btnContainer.appendChild(b);
-        });
-        const animTitle = document.createElement('div');
-        animTitle.innerText = 'Modelos / animaciones:';
-        Object.assign(animTitle.style, { color: 'white', fontSize: '12px', marginTop: '5px' });
-        pContent.appendChild(animTitle);
-        const animContainer = document.createElement('div');
-        Object.assign(animContainer.style, { display: 'flex', flexWrap: 'wrap', gap: '5px' });
-        pContent.appendChild(animContainer);
-        [
-            { name: "Mandíbula★", key: "mandibula" },
-            { name: "Bailar",     key: "dance"     },
-            { name: "Caminar",    key: "walk"      },
-            { name: "Correr",     key: "run"       },
-            { name: "Acordar",    anim: "agree"    },
-            { name: "Presentar",  anim: "present"  },
-            { name: "Reverencia", anim: "reverencia" },
-            { name: "Alentar",    anim: "alentar"  }
-        ].forEach(a => {
-            const b = document.createElement('button');
-            b.innerText = a.name;
-            const isMain = a.key === 'mandibula';
-            const isAnim = !!a.anim;
-            Object.assign(b.style, {
-                padding: '4px 8px', cursor: 'pointer', fontSize: '11px',
-                background: isMain ? '#27ae60' : (isAnim ? '#2980b9' : '#8e44ad'),
-                color: 'white', fontWeight: 'bold',
-                border: 'none', borderRadius: '4px', transition: 'transform 0.1s'
-            });
-            b.title = isMain ? 'Con shape keys de lip-sync' : (isAnim ? 'Animación del GLB' : 'Modelo externo');
-            b.onmousedown = () => b.style.transform = 'scale(0.95)';
-            b.onmouseup   = () => b.style.transform = 'scale(1)';
-            if (isAnim) {
-                b.onclick = () => {
-                    if (a.anim === 'reverencia') { window.patitasBow && window.patitasBow(); return; }
-                    if (a.anim === 'alentar')    { window.patitasCheer && window.patitasCheer(); return; }
-                    window.patitasPlayAnimation && window.patitasPlayAnimation(a.anim);
-                };
-            } else {
-                b.onclick = () => loadModel(MODEL_PATHS[a.key]);
-            }
-            animContainer.appendChild(b);
-        });
-        const tfTitle = document.createElement('div');
-        tfTitle.innerText = 'Modelo: posición / rotación / escala';
-        Object.assign(tfTitle.style, { color: 'white', fontSize: '12px', marginTop: '5px' });
-        pContent.appendChild(tfTitle);
-        function makeSlider(parent, label, min, max, step, value, onChange) {
-            const row = document.createElement('div');
-            Object.assign(row.style, { display: 'flex', alignItems: 'center', gap: '6px' });
-            const lab = document.createElement('span');
-            lab.innerText = label;
-            Object.assign(lab.style, { color: '#ecf0f1', fontSize: '11px', width: '32px' });
-            const inp = document.createElement('input');
-            inp.type = 'range'; inp.min = min; inp.max = max; inp.step = step; inp.value = value;
-            inp.style.flex = '1';
-            const num = document.createElement('span');
-            num.innerText = (+value).toFixed(2);
-            Object.assign(num.style, { color: '#bdc3c7', fontSize: '10px', width: '40px', textAlign: 'right' });
-            inp.oninput = () => { num.innerText = (+inp.value).toFixed(2); onChange(+inp.value); };
-            row.appendChild(lab); row.appendChild(inp); row.appendChild(num);
-            parent.appendChild(row);
-            return inp;
-        }
-        const sliderX  = makeSlider(pContent, 'X',  -8,   8,   0.05, 0,   v => { if (currentModel) currentModel.position.x = v; });
-        const sliderY  = makeSlider(pContent, 'Y',  -4,   4,   0.05, 0.6, v => { if (currentModel) { currentModel.position.y = v; baseY = v; } });
-        const sliderZ  = makeSlider(pContent, 'Z',  -6,   4,   0.05, 0,   v => { if (currentModel) currentModel.position.z = v; });
-        const sliderRY = makeSlider(pContent, '↻', -180, 180,  1,    0,   v => { if (currentModel) currentModel.rotation.y = v * Math.PI / 180; });
-        const sliderS  = makeSlider(pContent, 'Esc',0.2,  4,   0.05, 1,   v => { if (currentModel) currentModel.scale.set(v, v, v); });
-        const resetBtn = document.createElement('button');
-        resetBtn.innerText = '↺ Reset posición';
-        Object.assign(resetBtn.style, {
-            padding: '5px 10px', cursor: 'pointer', fontSize: '11px',
-            background: '#16a085', color: 'white', fontWeight: 'bold',
-            border: 'none', borderRadius: '4px'
-        });
-        resetBtn.onclick = resetTransform;
-        pContent.appendChild(resetBtn);
-        const visemeTitle = document.createElement('div');
-        visemeTitle.innerHTML = 'Probar viseme manual <span style="opacity:.6">(forzar shape key)</span>';
-        Object.assign(visemeTitle.style, { color: 'white', fontSize: '11px', marginTop: '5px' });
-        pContent.appendChild(visemeTitle);
-        const visemeRow = document.createElement('div');
-        Object.assign(visemeRow.style, { display: 'flex', flexWrap: 'wrap', gap: '4px' });
-        pContent.appendChild(visemeRow);
-        VISEME_NAMES.forEach(v => {
-            const b = document.createElement('button');
-            b.innerText = v;
-            Object.assign(b.style, {
-                padding: '3px 7px', cursor: 'pointer', fontSize: '10px',
-                background: '#34495e', color: '#ecf0f1', border: '1px solid #7f8c8d',
-                borderRadius: '4px', fontWeight: 'bold'
-            });
-            b.onclick = () => { manualViseme = v; };
-            visemeRow.appendChild(b);
-        });
-        const autoBtn = document.createElement('button');
-        autoBtn.innerText = 'AUTO';
-        Object.assign(autoBtn.style, {
-            padding: '3px 7px', cursor: 'pointer', fontSize: '10px',
-            background: '#27ae60', color: 'white', border: 'none',
-            borderRadius: '4px', fontWeight: 'bold'
-        });
-        autoBtn.onclick = () => { manualViseme = null; };
-        visemeRow.appendChild(autoBtn);
-        const customContainer = document.createElement('div');
-        Object.assign(customContainer.style, { display: 'flex', gap: '5px', marginTop: '6px' });
-        const customInput = document.createElement('input');
-        customInput.type = 'text';
-        customInput.placeholder = 'Mensaje personalizado...';
-        Object.assign(customInput.style, {
-            flex: '1', fontSize: '12px', padding: '4px 6px', borderRadius: '4px',
-            border: '1px solid #7f8c8d', background: '#34495e', color: 'white'
-        });
-        const speakBtn = document.createElement('button');
-        speakBtn.innerText = 'Hablar';
-        Object.assign(speakBtn.style, {
-            padding: '4px 10px', cursor: 'pointer', fontSize: '12px',
-            background: '#2ecc71', color: 'white', fontWeight: 'bold',
-            border: 'none', borderRadius: '4px'
-        });
-        speakBtn.onclick = () => {
-            if (customInput.value.trim() !== '') {
-                speakWithAnimation(customInput.value);
-                customInput.value = '';
-            }
-        };
-        customContainer.appendChild(customInput);
-        customContainer.appendChild(speakBtn);
-        pContent.appendChild(customContainer);
-        makeDraggable(panelContainer, pHeader);
-        document.getElementById('pvt-close').onclick = () => {
-            panelContainer.remove();
-            stage.remove();
-            hint.remove();
-            bubble.remove();
-            window.patitasVideoTutorLoaded = false;
-            window.__patitasShouldRender = false;
-            if (window.speechSynthesis) window.speechSynthesis.cancel();
-        };
         const stage = document.createElement('div');
         stage.id = 'video-tutor-stage';
         Object.assign(stage.style, {
@@ -331,19 +111,6 @@
             display: 'none'
         });
         document.body.appendChild(stage);
-        const hint = document.createElement('div');
-        hint.id = 'video-tutor-hint';
-        hint.innerHTML = 'Modo Patitas activo • Alt+arrastre mueve • Alt+Shift rota • Alt+rueda escala • Alt+clic der resetea • Ctrl+Alt+P ocultar/mostrar';
-        Object.assign(hint.style, {
-            position: 'fixed', bottom: '20px', left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(231,76,60,0.92)', color: 'white',
-            padding: '8px 16px', borderRadius: '20px',
-            fontFamily: 'sans-serif', fontSize: '13px', fontWeight: 'bold',
-            zIndex: '100002', display: 'none', pointerEvents: 'none',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
-        });
-        document.body.appendChild(hint);
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
         camera.position.set(0, 1.5, 5);
@@ -432,15 +199,6 @@
                 console.warn('[Patitas] Este modelo NO tiene shape keys. Lip-sync deshabilitado (solo head-bob).');
             }
         }
-        function syncSlidersFromModel() {
-            if (!currentModel) return;
-            sliderX.value  = currentModel.position.x.toFixed(2);
-            sliderY.value  = currentModel.position.y.toFixed(2);
-            sliderZ.value  = currentModel.position.z.toFixed(2);
-            sliderRY.value = (currentModel.rotation.y * 180 / Math.PI).toFixed(0);
-            sliderS.value  = currentModel.scale.x.toFixed(2);
-            [sliderX, sliderY, sliderZ, sliderRY, sliderS].forEach(s => s.dispatchEvent(new Event('input')));
-        }
         function applyModel(gltf, prev) {
             currentModel = gltf.scene;
             if (prev) {
@@ -492,7 +250,6 @@
                 currentAction = null;
                 currentActionName = null;
             }
-            syncSlidersFromModel();
         }
         function loadModel(src) {
             if (!src) return;
@@ -662,109 +419,6 @@
             });
         }
         window.patitasVideoTutorVoice = speakWithAnimation;
-        let altDown = false, shiftDown = false, dragging = false;
-        const dragStart = { x: 0, y: 0 };
-        const modelStart = new THREE.Vector3();
-        let rotStart = 0;
-        function setManipMode(on) {
-            stage.style.pointerEvents = on ? 'auto' : 'none';
-            renderer.domElement.style.pointerEvents = on ? 'auto' : 'none';
-            renderer.domElement.style.cursor = on ? (dragging ? 'grabbing' : 'grab') : 'default';
-            hint.style.display = on ? 'block' : 'none';
-        }
-        let patitasVisible = false;
-        window.patitasSetVisible = function(visible) {
-            patitasVisible = visible;
-            stage.style.display = patitasVisible ? 'block' : 'none';
-            if (typeof bubble !== 'undefined') bubble.style.visibility = patitasVisible ? 'visible' : 'hidden';
-        };
-        function _handleKeyDown(e) {
-            if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'p') {
-                patitasVisible = !patitasVisible;
-                stage.style.display = patitasVisible ? 'block' : 'none';
-                if (typeof bubble !== 'undefined') bubble.style.visibility = patitasVisible ? 'visible' : 'hidden';
-                return;
-            }
-            if (e.key === 'Alt' || e.altKey) {
-                if (!altDown) { altDown = true; setManipMode(true); }
-            }
-            if (e.key === 'Shift') shiftDown = true;
-            if (e.key === 'Escape' && altDown) { altDown = false; setManipMode(false); }
-        }
-        function _handleKeyUp(e) {
-            if (e.key === 'Alt') { altDown = false; dragging = false; setManipMode(false); }
-            if (e.key === 'Shift') shiftDown = false;
-        }
-        function _handleBlur() {
-            altDown = false; shiftDown = false; dragging = false; setManipMode(false);
-        }
-        window.addEventListener('keydown', _handleKeyDown);
-        window.addEventListener('keyup', _handleKeyUp);
-        window.addEventListener('blur', _handleBlur);
-        try {
-            if (window.parent && window.parent !== window) {
-                window.parent.addEventListener('keydown', _handleKeyDown);
-                window.parent.addEventListener('keyup', _handleKeyUp);
-                window.parent.addEventListener('blur', _handleBlur);
-            }
-        } catch(err) {   }
-        function pxToWorld(dx, dy) {
-            const dist = camera.position.distanceTo(
-                currentModel ? currentModel.position : new THREE.Vector3(0, 1, 0)
-            );
-            const vFov = camera.fov * Math.PI / 180;
-            const worldHeight = 2 * Math.tan(vFov / 2) * dist;
-            const worldWidth = worldHeight * camera.aspect;
-            return {
-                x:  (dx / window.innerWidth)  * worldWidth,
-                y: -(dy / window.innerHeight) * worldHeight
-            };
-        }
-        renderer.domElement.addEventListener('mousedown', e => {
-            if (!altDown || !currentModel) return;
-            if (e.button === 2) { resetTransform(); e.preventDefault(); return; }
-            dragging = true;
-            dragStart.x = e.clientX; dragStart.y = e.clientY;
-            modelStart.copy(currentModel.position);
-            rotStart = currentModel.rotation.y;
-            renderer.domElement.style.cursor = 'grabbing';
-            e.preventDefault();
-        });
-        window.addEventListener('mousemove', e => {
-            if (!dragging || !currentModel) return;
-            const dx = e.clientX - dragStart.x;
-            const dy = e.clientY - dragStart.y;
-            if (shiftDown) {
-                currentModel.rotation.y = rotStart + dx * Math.PI / 720;
-            } else {
-                const w = pxToWorld(dx, dy);
-                currentModel.position.x = modelStart.x + w.x;
-                currentModel.position.y = modelStart.y + w.y;
-            }
-            syncSlidersFromModel();
-        });
-        window.addEventListener('mouseup', () => {
-            dragging = false;
-            if (altDown) renderer.domElement.style.cursor = 'grab';
-        });
-        renderer.domElement.addEventListener('wheel', e => {
-            if (!altDown || !currentModel) return;
-            e.preventDefault();
-            const factor = e.deltaY > 0 ? 0.95 : 1.05;
-            const ns = Math.min(4, Math.max(0.2, currentModel.scale.x * factor));
-            currentModel.scale.set(ns, ns, ns);
-            syncSlidersFromModel();
-        }, { passive: false });
-        renderer.domElement.addEventListener('contextmenu', e => {
-            if (altDown) e.preventDefault();
-        });
-        function resetTransform() {
-            if (!currentModel) return;
-            currentModel.position.set(0, baseY, 0);
-            currentModel.rotation.set(0, 0, 0);
-            currentModel.scale.set(1, 1, 1);
-            syncSlidersFromModel();
-        }
         window.patitasSetViseme = function (name) {
             if (!name || name === 'AUTO') { manualViseme = null; console.log('[Patitas] viseme = AUTO'); return; }
             if (VISEME_NAMES.indexOf(name) === -1) {
