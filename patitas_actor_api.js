@@ -564,4 +564,56 @@
     };
     window.blocks = blocks;
     console.log('[PatitasActor] window.blocks (tutor IDE de bloques) disponible');
+
+    function _installQuizPatch() {
+        window.patitasVideoTutorQuiz = function (question, options, correctIdx, resolve) {
+            const bubble = document.getElementById('patitas-edu-bubble');
+            if (!bubble) { if (resolve) resolve(); return; }
+
+            let html = question + '<div class="patitas-quiz-options">';
+            options.forEach(function (opt, idx) {
+                html += '<button class="patitas-quiz-btn" data-quiz-idx="' + idx + '">' + opt + '</button>';
+            });
+            html += '</div>';
+            bubble.innerHTML = html;
+            bubble.style.display = 'block';
+            bubble.style.pointerEvents = 'auto';
+
+            if (!bubble._quizClickGuard) {
+                ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click', 'touchstart', 'touchend']
+                    .forEach(function (ev) { bubble.addEventListener(ev, function (e) { e.stopPropagation(); }, false); });
+                bubble._quizClickGuard = true;
+            }
+
+            const finish = function () { bubble.style.display = 'none'; if (resolve) resolve(); };
+
+            bubble.querySelectorAll('.patitas-quiz-btn').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const selected = parseInt(btn.getAttribute('data-quiz-idx'), 10);
+                    if (selected === correctIdx) {
+                        bubble.querySelectorAll('.patitas-quiz-btn').forEach(function (b) { b.disabled = true; });
+                        if (typeof window.patitasVideoTutorVoice === 'function')
+                            window.patitasVideoTutorVoice('¡Excelente! Muy bien.', { showSubtitle: false });
+                        setTimeout(finish, 1500);
+                    } else {
+                        bubble.style.animation = 'none';
+                        void bubble.offsetWidth;
+                        bubble.style.animation = 'bubblePop 0.3s ease-out';
+                        if (typeof window.patitasVideoTutorVoice === 'function')
+                            window.patitasVideoTutorVoice('Mmm... ¡casi! Intenta de nuevo.', { showSubtitle: false });
+                    }
+                });
+            });
+
+            if (typeof window.patitasVideoTutorVoice === 'function') {
+                window.patitasVideoTutorVoice(question + '. ' + options.join('. '), { showSubtitle: false });
+            }
+        };
+    }
+    if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', _installQuizPatch);
+    } else {
+        _installQuizPatch();
+    }
 })();
