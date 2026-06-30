@@ -616,4 +616,100 @@
     } else {
         _installQuizPatch();
     }
+
+    // ── FLASHCARDS — mazo con volteo + autoevaluación. Narra solo la pregunta. ──
+    patitas.flashcards = function (cards) {
+        ensureVisible();
+        return new Promise(function (resolve) {
+            cards = Array.isArray(cards) ? cards : [];
+            if (!cards.length) { resolve(); return; }
+
+            if (!document.getElementById('patitas-flashcard-style')) {
+                const st = document.createElement('style');
+                st.id = 'patitas-flashcard-style';
+                st.textContent =
+                    '#patitas-flashcard-overlay{position:fixed;inset:0;z-index:200001;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.18);pointer-events:auto;font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;}'
+                  + '.pfc-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;max-width:92vw;}'
+                  + '.pfc-progress{color:#fff;font-weight:bold;font-size:1rem;text-shadow:0 1px 4px #000;}'
+                  + '.pfc-card{width:min(440px,86vw);min-height:280px;position:relative;transform-style:preserve-3d;transition:transform .5s;cursor:pointer;}'
+                  + '.pfc-card.pfc-flipped{transform:rotateY(180deg);}'
+                  + '.pfc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;background:#fff;box-shadow:0 12px 34px rgba(0,0,0,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;box-sizing:border-box;text-align:center;}'
+                  + '.pfc-back{transform:rotateY(180deg);background:#eef4fb;}'
+                  + '.pfc-tag{position:absolute;top:10px;left:14px;font-size:.72rem;font-weight:bold;letter-spacing:.5px;color:#95a5a6;}'
+                  + '.pfc-img{max-width:100%;max-height:175px;object-fit:contain;border-radius:8px;}'
+                  + '.pfc-text{font-size:1.15rem;color:#2c3e50;font-weight:600;line-height:1.35;}'
+                  + '.pfc-back .pfc-text{font-weight:500;color:#1b5e20;}'
+                  + '.pfc-hint{font-size:.8rem;color:#b2bec3;}'
+                  + '.pfc-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;}'
+                  + '.pfc-ask{color:#fff;font-weight:bold;font-size:1.05rem;text-shadow:0 1px 4px #000;}'
+                  + '.pfc-btn{border:none;border-radius:10px;padding:10px 18px;font-size:1rem;font-weight:bold;cursor:pointer;font-family:inherit;box-shadow:0 3px 8px rgba(0,0,0,.3);}'
+                  + '.pfc-flip{background:#f1c40f;color:#222;}.pfc-yes{background:#27ae60;color:#fff;}.pfc-no{background:#c0392b;color:#fff;}.pfc-close{background:#2980b9;color:#fff;}'
+                  + '.pfc-summary{display:flex;flex-direction:column;align-items:center;gap:16px;background:#fff;padding:30px 40px;border-radius:18px;box-shadow:0 12px 34px rgba(0,0,0,.55);}'
+                  + '.pfc-summary-title{font-size:1.4rem;font-weight:bold;color:#2c3e50;}.pfc-summary-score{font-size:1.15rem;color:#16a085;font-weight:bold;}';
+                document.head.appendChild(st);
+            }
+
+            let ov = document.getElementById('patitas-flashcard-overlay');
+            if (ov) ov.remove();
+            ov = document.createElement('div');
+            ov.id = 'patitas-flashcard-overlay';
+            ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click', 'touchstart', 'touchend']
+                .forEach(function (ev) { ov.addEventListener(ev, function (e) { e.stopPropagation(); }, false); });
+            document.body.appendChild(ov);
+
+            let i = 0, known = 0, flipped = false;
+            function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+            function speakQuestion(t) { if (t && typeof window.patitasVideoTutorVoice === 'function') window.patitasVideoTutorVoice(t, { showSubtitle: false }); }
+
+            function render() {
+                const card = cards[i] || {};
+                ov.innerHTML =
+                    '<div class="pfc-wrap">'
+                  + '<div class="pfc-progress">Tarjeta ' + (i + 1) + ' de ' + cards.length + '</div>'
+                  + '<div class="pfc-card' + (flipped ? ' pfc-flipped' : '') + '">'
+                  +   '<div class="pfc-face pfc-front"><span class="pfc-tag">FRENTE</span>'
+                  +     (card.frontImg ? '<img class="pfc-img" src="' + card.frontImg + '">' : '')
+                  +     '<div class="pfc-text">' + esc(card.frontText) + '</div>'
+                  +     (flipped ? '' : '<div class="pfc-hint">(tocá la tarjeta para voltear)</div>')
+                  +   '</div>'
+                  +   '<div class="pfc-face pfc-back"><span class="pfc-tag">DORSO</span>'
+                  +     (card.backImg ? '<img class="pfc-img" src="' + card.backImg + '">' : '')
+                  +     '<div class="pfc-text">' + esc(card.backText) + '</div>'
+                  +   '</div>'
+                  + '</div>'
+                  + '<div class="pfc-actions"></div>'
+                  + '</div>';
+                const actions = ov.querySelector('.pfc-actions');
+                const cardEl = ov.querySelector('.pfc-card');
+                if (!flipped) {
+                    cardEl.onclick = flip;
+                    const b = document.createElement('button');
+                    b.className = 'pfc-btn pfc-flip'; b.textContent = '🔄 Voltear';
+                    b.onclick = function (e) { e.stopPropagation(); flip(); };
+                    actions.appendChild(b);
+                    speakQuestion(card.frontText);
+                } else {
+                    const ask = document.createElement('div'); ask.className = 'pfc-ask'; ask.textContent = '¿La sabías?';
+                    const yes = document.createElement('button'); yes.className = 'pfc-btn pfc-yes'; yes.textContent = '👍 Sí';
+                    const no = document.createElement('button'); no.className = 'pfc-btn pfc-no'; no.textContent = '👎 No';
+                    yes.onclick = function (e) { e.stopPropagation(); known++; next(); };
+                    no.onclick = function (e) { e.stopPropagation(); next(); };
+                    actions.appendChild(ask); actions.appendChild(yes); actions.appendChild(no);
+                }
+            }
+            function flip() { if (flipped) return; flipped = true; render(); }
+            function next() { i++; flipped = false; if (i >= cards.length) summary(); else render(); }
+            function summary() {
+                ov.innerHTML = '<div class="pfc-wrap"><div class="pfc-summary">'
+                  + '<div class="pfc-summary-title">¡Terminaste el repaso!</div>'
+                  + '<div class="pfc-summary-score">Sabías ' + known + ' de ' + cards.length + '</div>'
+                  + '<button class="pfc-btn pfc-close">Continuar</button>'
+                  + '</div></div>';
+                ov.querySelector('.pfc-close').onclick = function (e) { e.stopPropagation(); cleanup(); };
+            }
+            function cleanup() { try { ov.remove(); } catch (e) {} resolve(); }
+
+            render();
+        });
+    };
 })();

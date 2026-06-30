@@ -208,6 +208,123 @@
         const idx = Number(block.getFieldValue('CORRECT_IDX'));
         return `await patitas.quiz(${JSON.stringify(q)}, [${JSON.stringify(a)}, ${JSON.stringify(b)}, ${JSON.stringify(c)}], ${idx});\n`;
     };
+
+    function _fcSvgDataUri(svg) {
+        return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+    const FC_ICON_CAMERA = _fcSvgDataUri(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="58" height="40"><rect width="58" height="40" rx="5" fill="#2c3e50"/>' +
+        '<rect x="20" y="8" width="18" height="5" rx="2" fill="#ecf0f1"/><circle cx="29" cy="23" r="8" fill="none" stroke="#ecf0f1" stroke-width="2"/>' +
+        '<text x="29" y="38" font-size="6" fill="#bdc3c7" text-anchor="middle">subir imagen</text></svg>');
+    const FC_ICON_CLEAR = _fcSvgDataUri(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="8" fill="#c0392b"/><path d="M5 5L11 11M11 5L5 11" stroke="#fff" stroke-width="2"/></svg>');
+
+    function _fcPickImage(maxDim, cb) {
+        const inp = document.createElement('input');
+        inp.type = 'file';
+        inp.accept = 'image/*';
+        inp.onchange = function () {
+            const file = inp.files && inp.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    let w = img.width, h = img.height;
+                    const scale = Math.min(1, maxDim / Math.max(w, h));
+                    w = Math.max(1, Math.round(w * scale));
+                    h = Math.max(1, Math.round(h * scale));
+                    try {
+                        const c = document.createElement('canvas');
+                        c.width = w; c.height = h;
+                        c.getContext('2d').drawImage(img, 0, 0, w, h);
+                        cb(c.toDataURL('image/jpeg', 0.82));
+                    } catch (err) { cb(e.target.result); }
+                };
+                img.onerror = function () { cb(e.target.result); };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        inp.click();
+    }
+
+    Blockly.Blocks['patitas_flashcard'] = {
+        init: function () {
+            this.fcFrontImg = '';
+            this.fcBackImg = '';
+            const self = this;
+            this.appendDummyInput().appendField('🃏 Tarjeta');
+            this.appendDummyInput()
+                .appendField('Frente 🖼️')
+                .appendField(new Blockly.FieldImage(FC_ICON_CAMERA, 58, 40, 'Subir imagen del frente', function () {
+                    _fcPickImage(800, function (d) { self.fcFrontImg = d; self._fcRefresh(); });
+                }), 'FRONT_THUMB')
+                .appendField(new Blockly.FieldImage(FC_ICON_CLEAR, 14, 14, 'Quitar imagen del frente', function () {
+                    self.fcFrontImg = ''; self._fcRefresh();
+                }), 'FRONT_CLEAR');
+            this.appendDummyInput()
+                .appendField('Pregunta:')
+                .appendField(new Blockly.FieldTextInput('¿Pregunta?'), 'FRONT_TEXT');
+            this.appendDummyInput()
+                .appendField('Dorso 🖼️')
+                .appendField(new Blockly.FieldImage(FC_ICON_CAMERA, 58, 40, 'Subir imagen del dorso', function () {
+                    _fcPickImage(800, function (d) { self.fcBackImg = d; self._fcRefresh(); });
+                }), 'BACK_THUMB')
+                .appendField(new Blockly.FieldImage(FC_ICON_CLEAR, 14, 14, 'Quitar imagen del dorso', function () {
+                    self.fcBackImg = ''; self._fcRefresh();
+                }), 'BACK_CLEAR');
+            this.appendDummyInput()
+                .appendField('Respuesta:')
+                .appendField(new Blockly.FieldTextInput('Respuesta'), 'BACK_TEXT');
+            this.setPreviousStatement(true, 'flashcard_item');
+            this.setNextStatement(true, 'flashcard_item');
+            this.setColour(COLOR_PATITAS);
+            this.setInputsInline(false);
+            this.setTooltip('Una tarjeta: frente (imagen opcional + pregunta) y dorso (imagen opcional + respuesta). Va dentro del bloque "Flashcards".');
+        },
+        _fcRefresh: function () {
+            const ft = this.getField('FRONT_THUMB'); if (ft) ft.setValue(this.fcFrontImg || FC_ICON_CAMERA);
+            const bt = this.getField('BACK_THUMB'); if (bt) bt.setValue(this.fcBackImg || FC_ICON_CAMERA);
+        },
+        mutationToDom: function () {
+            const m = Blockly.utils.xml.createElement('mutation');
+            if (this.fcFrontImg) m.setAttribute('frontimg', this.fcFrontImg);
+            if (this.fcBackImg) m.setAttribute('backimg', this.fcBackImg);
+            return m;
+        },
+        domToMutation: function (xml) {
+            this.fcFrontImg = xml.getAttribute('frontimg') || '';
+            this.fcBackImg = xml.getAttribute('backimg') || '';
+            this._fcRefresh();
+        }
+    };
+    Blockly.JavaScript.forBlock['patitas_flashcard'] = function (block) {
+        const card = {
+            frontText: block.getFieldValue('FRONT_TEXT') || '',
+            frontImg: block.fcFrontImg || '',
+            backText: block.getFieldValue('BACK_TEXT') || '',
+            backImg: block.fcBackImg || ''
+        };
+        return 'if (typeof __fc !== "undefined") __fc.push(' + JSON.stringify(card) + ');\n';
+    };
+
+    Blockly.Blocks['patitas_flashcards'] = {
+        init: function () {
+            this.appendDummyInput().appendField('🎴 Flashcards (autoevaluación)');
+            this.appendStatementInput('CARDS').setCheck('flashcard_item').appendField('tarjetas');
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(COLOR_PATITAS);
+            this.setTooltip('Mazo de tarjetas. El alumno ve el frente, voltea para ver el dorso y se autoevalúa (¿La sabías? Sí/No).');
+        }
+    };
+    Blockly.JavaScript.forBlock['patitas_flashcards'] = function (block) {
+        const inner = Blockly.JavaScript.statementToCode(block, 'CARDS');
+        return 'await (async () => {\n  const __fc = [];\n' + inner +
+               '  if (typeof patitas !== "undefined" && patitas.flashcards) await patitas.flashcards(__fc);\n})();\n';
+    };
+
     Blockly.Blocks['patitas_rotate'] = {
         init: function () {
             this.appendDummyInput()
@@ -2021,6 +2138,10 @@
                 <block type="patitas_wait"></block>
                 <block type="patitas_wait_key"></block>
                 <block type="patitas_quiz"></block>
+                <block type="patitas_flashcards">
+                    <statement name="CARDS"><block type="patitas_flashcard"></block></statement>
+                </block>
+                <block type="patitas_flashcard"></block>
                 <block type="patitas_move_to"></block>
                 <block type="patitas_rotate"></block>
                 <block type="patitas_anim"></block>
