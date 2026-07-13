@@ -38,18 +38,26 @@
       }
       go.run(instance);
       ready = typeof patitasMnaSolve === 'function';
-      console.log('[mna-wasm] listo:', (typeof patitasMnaVersion !== 'undefined') ? patitasMnaVersion : '?');
+      window.PATITAS_WASM_READY = ready;
+      window.PATITAS_WASM_VERSION = (typeof patitasMnaVersion !== 'undefined') ? patitasMnaVersion : '?';
+      console.log('[mna-wasm] listo:', window.PATITAS_WASM_VERSION);
     } catch (e) {
+      window.PATITAS_WASM_READY = false;
       console.warn('[mna-wasm] no disponible, motor JS activo:', e.message);
     }
   }
+  window.PATITAS_WASM_READY = false; // se pone true recién si init() tiene éxito
   init();
 
   function eligible(components) {
     // El WASM v1 implementa solo los caminos default (EM + Shockley).
     if (window.USE_EBERS_MOLL === false || window.USE_SHOCKLEY_DIODES === false) return false;
     for (const c of components) {
-      if (c._astableForced) return false; // heurística legacy externa
+      // Astables: con Ebers-Moll la oscilación es física (no depende de la heurística
+      // _astableForced, que el solver EM ya ignora). Se dejan pasar al WASM solo si
+      // PATITAS_WASM_ASTABLE está activo (opt-in de prueba). En producción se siguen
+      // resolviendo en JS hasta validar paridad en varios equipos.
+      if (c._astableForced && !window.PATITAS_WASM_ASTABLE) return false;
       if (c.isTransistorCE && !(isFinite(c.Is) && c.Is > 0 && isFinite(c.beta) && c.beta > 0
         && isFinite(c.betaR) && c.betaR > 0)) return false;
     }
@@ -98,7 +106,7 @@
         if (isFinite(ud.iPrev)) st.iPrev = ud.iPrev;
         return {
           type: c.type, a: c.a, b: c.b, R: c.R || 0, vDrop: c.vDrop || 0,
-          C: c.C || 0, L: c.L || 0,
+          C: c.C || 0, L: c.L || 0, astableForced: c._astableForced || '',
           isDiode: !!c.isDiode, isTransistorCE: !!c.isTransistorCE, isNE555Out: !!c.isNE555Out,
           outputVoltage: c.outputVoltage || 0,
           Is: c.Is || 0, eta: c.eta || 0, beta: c.beta || 0, betaR: c.betaR || 0,

@@ -107,7 +107,7 @@
             background: rgba(10,14,23,0.82);
             backdrop-filter: blur(20px) saturate(1.4);
             border-bottom: 1px solid var(--border-subtle);
-            overflow: hidden;
+            overflow: visible; /* permite que el submenú de Narratrónica se muestre */
             transition: height 0.35s cubic-bezier(0.4,0,0.2,1),
                         background 0.3s, box-shadow 0.3s,
                         border-color 0.3s;
@@ -122,6 +122,7 @@
 
         .navbar.sim-collapsed {
             height: 5px;
+            overflow: hidden; /* recorta el contenido solo al colapsar en el simulador */
             border-bottom: 2px solid var(--multimeter-yellow);
             background: rgba(10,14,23,0.6);
             box-shadow: 0 0 20px var(--yellow-glow);
@@ -147,7 +148,7 @@
         .nav-hover-zone {
             position: fixed;
             top: 0; left: 0; right: 0;
-            height: 18px;
+            height: 26px; /* algo más alto para tocar fácil en tablet */
             z-index: 10000;
             display: none;
             cursor: default;
@@ -189,6 +190,7 @@
             display: flex;
             gap: 4px;
             list-style: none;
+            align-items: center;
         }
 
         .nav-link {
@@ -267,6 +269,7 @@
                 position: fixed;
                 top: 64px; left: 0; right: 0;
                 flex-direction: column;
+                align-items: stretch;
                 background: rgba(10,14,23,0.97);
                 backdrop-filter: blur(20px);
                 padding: 16px;
@@ -277,6 +280,48 @@
             }
             .nav-links.open { transform: translateY(0); }
             .nav-link { padding: 14px 18px; font-size: 1rem; }
+        }
+
+        /* ── Narratrónica dropdown ── */
+        .nav-dropdown { position: relative; }
+        .nav-dropdown-toggle { display: inline-flex; align-items: center; gap: 5px; }
+        .nav-caret { font-size: 0.65em; opacity: 0.75; transition: transform 0.25s ease; }
+        .nav-dropdown.open .nav-caret { transform: rotate(180deg); }
+        .nav-submenu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            padding-top: 12px;
+            left: 0;
+            min-width: 220px;
+            list-style: none;
+            padding: 8px;
+            margin: 0;
+            background: rgba(10,14,23,0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 14px 40px rgba(0,0,0,0.5), 0 0 22px rgba(241,196,15,0.08);
+            z-index: 1200;
+        }
+        .nav-dropdown.open .nav-submenu,
+        .nav-dropdown:hover .nav-submenu { display: block; animation: narraFade 0.2s ease; }
+        @keyframes narraFade { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-submenu li { list-style: none; margin: 0; }
+        .nav-submenu .nav-link { display: block; padding: 11px 14px; white-space: nowrap; }
+
+        @media (max-width: 768px) {
+            .nav-submenu {
+                position: static;
+                display: block;
+                background: transparent;
+                border: none;
+                box-shadow: none;
+                backdrop-filter: none;
+                padding: 2px 0 6px 14px;
+                min-width: 0;
+            }
+            .nav-dropdown .nav-caret { display: none; }
         }
 
         /* ═══════════════════════════════════════════

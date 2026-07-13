@@ -5,15 +5,46 @@ if ('scrollRestoration' in history) {
 window.scrollTo(0, 0);
 
 // ─── SPA NAVIGATION ───────────────────────
-    const pages = ['home', 'roadmap', 'simulator', 'circuits', 'videos', 'programming', 'feedback'];
+    const pages = ['home', 'roadmap', 'simulator', 'circuits', 'videos', 'programming', 'feedback', 'hidroponia', 'tuneles'];
     let currentPage = 'home';
     let simLoaded = false;
+    let hidroLoaded = false;
+    let tunelesLoaded = false;
 
     const navbar = document.getElementById('navbar');
     const hoverZone = document.getElementById('navHoverZone');
     const simPage = document.getElementById('page-simulator');
     let collapseTimeout = null;
     let isSimMode = false;
+    // Páginas a pantalla completa que usan el auto-colapso del menú
+    const fullscreenPages = ['simulator', 'hidroponia', 'tuneles'];
+    let appPage = null; // elemento de la página a pantalla completa activa
+
+    // ── Narratrónica: carga diferida de las apps + menú desplegable ──
+    function lazyLoadAppFrame(frameId, loaderId, src) {
+        const frame = document.getElementById(frameId);
+        if (!frame) return;
+        frame.addEventListener('load', () => {
+            const loader = document.getElementById(loaderId);
+            if (loader) loader.classList.add('hidden');
+        });
+        setTimeout(() => {
+            const loader = document.getElementById(loaderId);
+            if (loader && !loader.classList.contains('hidden')) loader.classList.add('hidden');
+        }, 3500);
+        frame.src = src + '?v=' + new Date().getTime();
+    }
+
+    function toggleNarra(e) {
+        if (e) e.stopPropagation();
+        const dd = document.getElementById('narraDropdown');
+        if (dd) dd.classList.toggle('open');
+    }
+    window.toggleNarra = toggleNarra;
+    document.addEventListener('click', (e) => {
+        const dd = document.getElementById('narraDropdown');
+        if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+    });
 
     function navigate(page) {
         if (!pages.includes(page)) return;
@@ -39,6 +70,8 @@ window.scrollTo(0, 0);
 
         // Close mobile menu
         document.getElementById('navLinks').classList.remove('open');
+        const _nd = document.getElementById('narraDropdown');
+        if (_nd) _nd.classList.remove('open');
 
         // Lazy-load simulator iframe
         if (page === 'simulator' && !simLoaded) {
@@ -65,17 +98,33 @@ window.scrollTo(0, 0);
             simLoaded = true;
         }
 
-        // ── NAVBAR AUTO-COLLAPSE for simulator ──
-        if (page === 'simulator') {
+        // Lazy-load de las apps de Narratrónica
+        if (page === 'hidroponia' && !hidroLoaded) {
+            lazyLoadAppFrame('hidroFrame', 'hidroLoader', 'html/hidroponia.html');
+            hidroLoaded = true;
+        }
+        if (page === 'tuneles' && !tunelesLoaded) {
+            lazyLoadAppFrame('tunelesFrame', 'tunelesLoader', 'html/tuneles-secretos.html');
+            tunelesLoaded = true;
+        }
+
+        // ── NAVBAR AUTO-COLLAPSE en páginas a pantalla completa (simulador + Narratrónica) ──
+        // Limpiar nav-hidden de todas las páginas a pantalla completa antes de decidir
+        fullscreenPages.forEach(function (pg) {
+            var el = document.getElementById('page-' + pg);
+            if (el) el.classList.remove('nav-hidden');
+        });
+        if (fullscreenPages.indexOf(page) !== -1) {
             isSimMode = true;
+            appPage = document.getElementById('page-' + page);
             // Small delay so user sees the page first
             setTimeout(() => collapseNavbar(), 600);
             hoverZone.classList.add('active');
         } else {
             isSimMode = false;
+            appPage = null;
             expandNavbar(true); // permanent expand
             hoverZone.classList.remove('active');
-            simPage.classList.remove('nav-hidden');
         }
 
         // Inicializar Lazy Load con Intersection Observer para Iframes (Videos y Feedback)
@@ -113,18 +162,18 @@ window.scrollTo(0, 0);
 
     // ─── COLLAPSE / EXPAND NAVBAR ────────────
     function collapseNavbar() {
-        if (!isSimMode) return;
+        if (!isSimMode || !appPage) return;
         clearTimeout(collapseTimeout);
         navbar.classList.add('sim-collapsed');
         navbar.classList.remove('sim-expanded');
-        simPage.classList.add('nav-hidden');
+        appPage.classList.add('nav-hidden');
     }
 
     function expandNavbar(permanent) {
         clearTimeout(collapseTimeout);
         navbar.classList.remove('sim-collapsed');
         navbar.classList.add('sim-expanded');
-        simPage.classList.remove('nav-hidden');
+        if (appPage) appPage.classList.remove('nav-hidden');
 
         // Auto-collapse after delay unless permanent
         if (!permanent && isSimMode) {
@@ -143,7 +192,7 @@ window.scrollTo(0, 0);
             clearTimeout(collapseTimeout);
             navbar.classList.remove('sim-collapsed');
             navbar.classList.add('sim-expanded');
-            simPage.classList.remove('nav-hidden');
+            if (appPage) appPage.classList.remove('nav-hidden');
         }
     });
 
