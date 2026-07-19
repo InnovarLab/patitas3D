@@ -5,7 +5,7 @@ if ('scrollRestoration' in history) {
 window.scrollTo(0, 0);
 
 // ─── SPA NAVIGATION ───────────────────────
-    const pages = ['home', 'roadmap', 'simulator', 'circuits', 'videos', 'programming', 'feedback', 'hidroponia', 'tuneles'];
+    const pages = ['home', 'roadmap', 'simulator', 'circuits', 'videos', 'programming', 'recursos', 'feedback', 'hidroponia', 'tuneles'];
     let currentPage = 'home';
     let simLoaded = false;
     let hidroLoaded = false;
@@ -48,6 +48,14 @@ window.scrollTo(0, 0);
 
     function navigate(page) {
         if (!pages.includes(page)) return;
+
+        // En celular, las apps Narratrónica se abren directo (sin iframe):
+        // el viewport propio de cada app ajusta el lienzo a la pantalla y
+        // habilita el pinch-zoom nativo.
+        if ((page === 'tuneles' || page === 'hidroponia') && window.innerWidth < 900) {
+            window.location.href = page === 'tuneles' ? 'html/tuneles-secretos.html' : 'html/hidroponia.html';
+            return;
+        }
         currentPage = page;
 
         // Hide all pages

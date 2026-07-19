@@ -1,0 +1,8 @@
+Poné acá los tres demos en mp4 (recorrido rápido de cada recurso, 30-60 segundos):
+
+  demo_manual_basico.mp4
+  demo_sala_maquinas.mp4
+  demo_cuadernos.mp4
+
+Los botones "Ver demo" de la sección Recursos apuntan a estos nombres exactos.
+Mientras no existan, el botón muestra "El demo llega muy pronto".
