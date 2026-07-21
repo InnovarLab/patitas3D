@@ -5,11 +5,12 @@ if ('scrollRestoration' in history) {
 window.scrollTo(0, 0);
 
 // ─── SPA NAVIGATION ───────────────────────
-    const pages = ['home', 'roadmap', 'simulator', 'circuits', 'videos', 'programming', 'recursos', 'feedback', 'hidroponia', 'tuneles'];
+    const pages = ['home', 'roadmap', 'simulator', 'circuits', 'videos', 'programming', 'recursos', 'feedback', 'hidroponia', 'tuneles', 'aldea'];
     let currentPage = 'home';
     let simLoaded = false;
     let hidroLoaded = false;
     let tunelesLoaded = false;
+    let aldeaLoaded = false;
 
     const navbar = document.getElementById('navbar');
     const hoverZone = document.getElementById('navHoverZone');
@@ -17,7 +18,7 @@ window.scrollTo(0, 0);
     let collapseTimeout = null;
     let isSimMode = false;
     // Páginas a pantalla completa que usan el auto-colapso del menú
-    const fullscreenPages = ['simulator', 'hidroponia', 'tuneles'];
+    const fullscreenPages = ['simulator', 'hidroponia', 'tuneles', 'aldea'];
     let appPage = null; // elemento de la página a pantalla completa activa
 
     // ── Narratrónica: carga diferida de las apps + menú desplegable ──
@@ -110,6 +111,10 @@ window.scrollTo(0, 0);
         if (page === 'hidroponia' && !hidroLoaded) {
             lazyLoadAppFrame('hidroFrame', 'hidroLoader', 'html/hidroponia.html');
             hidroLoaded = true;
+        }
+        if (page === 'aldea' && !aldeaLoaded) {
+            lazyLoadAppFrame('aldeaFrame', 'aldeaLoader', 'html/Aldea_Centella_libro_local.html');
+            aldeaLoaded = true;
         }
         if (page === 'tuneles' && !tunelesLoaded) {
             lazyLoadAppFrame('tunelesFrame', 'tunelesLoader', 'html/tuneles-secretos.html');
