@@ -1761,3 +1761,9 @@
         -webkit-overflow-scrolling: touch;
     }
 }
+
+.comprobante-nota{color:var(--text-muted);font-size:.82rem;text-align:center;margin:2px 0 0 0}
+.comprobante-nota a{color:var(--sky-blue,#5dade2);text-decoration:none}
+
+.btn-ws { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-decoration: none; transition: transform .15s, filter .15s; background: linear-gradient(135deg, #25d366, #128c7e); color: #fff; }
+.btn-ws:hover { transform: translateY(-2px); filter: brightness(1.12); }
